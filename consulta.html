@@ -99,10 +99,12 @@ document.getElementById('filtro').addEventListener('submit', async e => {
     rows.forEach(r => {
       // columna F → "2026-01-22 12:00"
       const fechaStr = (r.c[5]?.v || '').toString().trim();
-      if (!fechaStr) return;
+      if (!fechaStr || fechaStr.length < 10) return; // protección
+
       const [dia, hora] = fechaStr.split(' ');
-      const [y, m, d]   = dia.split('-');
-      const [h, min]    = hora.split(':');
+      if (!dia || !hora) return;
+      const [y, m, d] = dia.split('-');
+      const [h, min] = hora.split(':');
       const fechaVisita = new Date(y, m - 1, d, h, min); // fecha válida
 
       const asesor = (r.c[2]?.v || '').trim();
