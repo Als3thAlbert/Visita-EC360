@@ -100,28 +100,21 @@ document.getElementById('filtro').addEventListener('submit', async e => {
     let contador = 0;
 
     rows.forEach((r, idx) => {
-      // columna F → "2026-01-22 12:00"
-      const fechaStr = (r.c[5]?.v || '').toString().trim();
+      // columna F → objeto Date: {v: Date(2026,0,22,12,0,0)}
+      const fechaObj = r.c[5]?.v;
       const asesor   = (r.c[2]?.v || '').trim();
       const jpgUrl   = r.c[8]?.v || '';
 
       // depuración visible por fila
-      const logFila = `Fila ${idx + 1}: asesor="${asesor}" fechaStr="${fechaStr}"`;
+      const logFila = `Fila ${idx + 1}: asesor="${asesor}" fechaObj="${fechaObj}"`;
 
-      if (!fechaStr || fechaStr.length < 10) {
+      if (!fechaObj) {
         log.innerHTML += `<div class="fila-debug">⚠️ Salto: fecha vacía (${logFila})</div>`;
         return;
       }
 
-      const [dia, hora] = fechaStr.split(' ');
-      if (!dia || !hora) {
-        log.innerHTML += `<div class="fila-debug">⚠️ Salto: formato fecha mal (${logFila})</div>`;
-        return;
-      }
-
-      const [y, m, d] = dia.split('-');
-      const [h, min]  = hora.split(':');
-      const fechaVisita = new Date(y, m - 1, d, h, min); // fecha válida
+      // Convierte objeto Date(yyyy,m,d,h,min,s) → Date JS
+      const fechaVisita = new Date(fechaObj);
 
       // depuración de fecha convertida
       log.innerHTML += `<div class="fila-debug">✅ Fecha convertida: ${fechaVisita.toLocaleString('es-ES')} (${logFila})</div>`;
