@@ -86,11 +86,22 @@ document.getElementById('filtro').addEventListener('submit', async e => {
 
   let html = '';
   rows.forEach(r => {
-    const fechaVisita = new Date(r.c[5]?.v || ''); // columna F = Fecha_Hora
-    const asesor      = (r.c[2]?.v || '').trim();  // columna C = Asesor
-    const jpgUrl      = r.c[8]?.v || '';           // columna I = jpg_url
+    // columna F → "2026-01-22 12:00"
+    const fechaStr = (r.c[5]?.v || '').toString().trim();
+    if (!fechaStr) return;
+    const [dia, hora] = fechaStr.split(' ');
+    const [y, m, d]   = dia.split('-');
+    const [h, min]    = hora.split(':');
+    const fechaVisita = new Date(y, m - 1, d, h, min); // ← fecha válida
 
-    if (fechaVisita >= desde && fechaVisita <= hasta && (asesorSel === '' || asesor === asesorSel)) {
+    const asesor = (r.c[2]?.v || '').trim();
+    const jpgUrl = r.c[8]?.v || '';
+
+    if (
+      fechaVisita >= desde &&
+      fechaVisita <= hasta &&
+      (asesorSel === '' || asesor === asesorSel)
+    ) {
       html += `
         <p><strong>${r.c[1]?.v || ''}</strong> (${asesor})</p>
         <p>${r.c[4]?.v || ''} · ${fechaVisita.toLocaleString('es-ES')}</p>
