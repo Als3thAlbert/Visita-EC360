@@ -106,7 +106,7 @@ document.getElementById('filtro').addEventListener('submit', async e => {
       const jpgUrl   = r.c[8]?.v || '';
 
       // depuración visible por fila
-      const logFila = `Fila ${idx + 1}: asesor="${aseser}" fechaStr="${fechaStr}"`;
+      const logFila = `Fila ${idx + 1}: asesor="${asesor}" fechaStr="${fechaStr}"`;
 
       if (!fechaStr || fechaStr.length < 10) {
         log.innerHTML += `<div class="fila-debug">⚠️ Salto: fecha vacía (${logFila})</div>`;
@@ -121,7 +121,7 @@ document.getElementById('filtro').addEventListener('submit', async e => {
 
       const [y, m, d] = dia.split('-');
       const [h, min]  = hora.split(':');
-      const fechaVisita = new Date(y, m - 1, d, h, min);
+      const fechaVisita = new Date(y, m - 1, d, h, min); // fecha válida
 
       // depuración de fecha convertida
       log.innerHTML += `<div class="fila-debug">✅ Fecha convertida: ${fechaVisita.toLocaleString('es-ES')} (${logFila})</div>`;
