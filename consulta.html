@@ -41,6 +41,7 @@ button:active{opacity:.9}
     <option>Núria</option>
     <option>Jenny AC</option>
     <option>Tere</option>
+    <option>Ray</option>
   </select>
 
   <label>Desde</label>
@@ -62,7 +63,6 @@ button:active{opacity:.9}
 <script>
 // CONFIGURA TUS IDs
 const SHEET_ID = '1XpSuE9wzhEQ0pM9AxtzE4WtFz8eQpMtlKYYDMvNOs3s';
-const FOLDER_URL = 'https://drive.google.com/drive/folders/1K447O80SunH-ykKx61E9LAmtqA9K-9QE?usp=sharing';
 
 // Fechas por defecto (hoy y hace 15 días)
 const hoy = new Date();
@@ -86,13 +86,15 @@ document.getElementById('filtro').addEventListener('submit', async e => {
 
   let html = '';
   rows.forEach(r => {
-    const ts = new Date(r.c[9]?.v || 0); // columna "timestamp"
-    const asesor = r.c[2]?.v || '';
-    if (ts >= desde && ts <= hasta && (asesorSel === '' || asesor === asesorSel)) {
+    const fechaVisita = new Date(r.c[5]?.v || ''); // columna F = Fecha_Hora
+    const asesor      = (r.c[2]?.v || '').trim();  // columna C = Asesor
+    const jpgUrl      = r.c[8]?.v || '';           // columna I = jpg_url
+
+    if (fechaVisita >= desde && fechaVisita <= hasta && (asesorSel === '' || asesor === asesorSel)) {
       html += `
         <p><strong>${r.c[1]?.v || ''}</strong> (${asesor})</p>
-        <p>${r.c[4]?.v || ''} · ${new Date(r.c[5]?.v || '').toLocaleString('es-ES')}</p>
-        <p><a href="${r.c[8]?.v || '#'}" target="_blank">📎 Ver JPG</a></p>
+        <p>${r.c[4]?.v || ''} · ${fechaVisita.toLocaleString('es-ES')}</p>
+        <p><a href="${jpgUrl}" target="_blank">📎 Ver JPG</a></p>
         <div class="divider"></div>
       `;
     }
