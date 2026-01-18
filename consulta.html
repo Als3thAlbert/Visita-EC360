@@ -5,14 +5,7 @@
 <title>Consulta de Visitas – E-CONSULTING 360</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
-:root{
-  --naranja:#ff6600;
-  --negro:#111;
-  --gris:#555;
-  --bg:#fafafa;
-  --radius:8px;
-  --fuente:15px/1.4 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial;
-}
+:root{--naranja:#ff6600;--negro:#111;--gris:#555;--bg:#fafafa;--radius:8px;--fuente:15px/1.4 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial}
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);font:var(--fuente);color:var(--negro);padding:1rem}
 header{text-align:center;margin-bottom:1.5rem}
@@ -20,7 +13,7 @@ header{text-align:center;margin-bottom:1.5rem}
 h2{margin:1rem 0 .5rem;color:var(--naranja)}
 form{display:grid;gap:.75rem}
 label{font-weight:600;color:var(--gris)}
-input,button{width:100%;padding:.65rem;font-size:1rem;border:1px solid #ddd;border-radius:var(--radius)}
+input,select,button{width:100%;padding:.65rem;font-size:1rem;border:1px solid #ddd;border-radius:var(--radius)}
 button{background:var(--naranja);color:#fff;border:0;cursor:pointer}
 button:active{opacity:.9}
 .actions{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem}
@@ -37,56 +30,69 @@ button:active{opacity:.9}
 </header>
 
 <form id="filtro">
+  <label>Asesor</label>
+  <select id="asesor">
+    <option value="">-- Todos --</option>
+    <option>Jennifer Diana</option>
+    <option>Marina</option>
+    <option>Eli</option>
+    <option>Iñigo</option>
+    <option>Merche</option>
+    <option>Núria</option>
+    <option>Jenny AC</option>
+    <option>Tere</option>
+  </select>
+
   <label>Desde</label>
   <input type="date" id="desde" required>
+
   <label>Hasta</label>
   <input type="date" id="hasta" required>
+
   <button type="submit">Filtrar visitas</button>
 </form>
 
 <div class="actions">
-  <button onclick="window.open('https://drive.google.com/drive/folders/https://drive.google.com/drive/folders/1K447O80SunH-ykKx61E9LAmtqA9K-9QE','_blank')">📁 Ver JPGs en Drive</button>
-  <button onclick="window.open('https://docs.google.com/spreadsheets/d/https://docs.google.com/spreadsheets/d/1XpSuE9wzhEQ0pM9AxtzE4WtFz8eQpMtlKYYDMvNOs3s/edit?gid=0#gid=0','_blank')">📊 Ver Excel de Visitas</button>
+  <button onclick="window.open('https://drive.google.com/drive/folders/1K447O80SunH-ykKx61E9LAmtqA9K-9QE?usp=sharing','_blank')">📁 Ver JPGs en Drive</button>
+  <button onclick="window.open('https://docs.google.com/spreadsheets/d/1XpSuE9wzhEQ0pM9AxtzE4WtFz8eQpMtlKYYDMvNOs3s/edit?usp=sharing','_blank')">📊 Ver Excel completo</button>
 </div>
 
 <div id="lista"></div>
 
 <script>
-// CONFIGURA AQUÍ TUS IDs
-const SHEET_ID = '1XpSuE9wzhEQ0pM9AxtzE4WtFz8eQpMtlKYYDMvNOs3s'; // ← tu ID de hoja
-const FOLDER_ID = '1LacsLc4uBJkqumIOSEuAcegK513IIogz';       // ← tu ID de carpeta
+// CONFIGURA TUS IDs
+const SHEET_ID = '1XpSuE9wzhEQ0pM9AxtzE4WtFz8eQpMtlKYYDMvNOs3s';
+const FOLDER_URL = 'https://drive.google.com/drive/folders/1K447O80SunH-ykKx61E9LAmtqA9K-9QE?usp=sharing';
 
-// Poner fechas por defecto (hoy y hace 15 días)
+// Fechas por defecto (hoy y hace 15 días)
 const hoy = new Date();
-const hace15 = new Date(hoy); hace15.setDate(hoy.getDate()-15);
-document.getElementById('desde').value = hace15.toISOString().slice(0,10);
-document.getElementById('hasta').value = hoy.toISOString().slice(0,10);
-
-// Actualizar enlaces de botones
-document.querySelector('.actions button:nth-child(1)').onclick = () => window.open(`https://drive.google.com/drive/folders/${FOLDER_ID}`,'_blank');
-document.querySelector('.actions button:nth-child(2)').onclick = () => window.open(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/edit`,'_blank');
+const hace15 = new Date(hoy); hace15.setDate(hoy.getDate() - 15);
+document.getElementById('desde').value = hace15.toISOString().slice(0, 10);
+document.getElementById('hasta').value = hoy.toISOString().slice(0, 10);
 
 // Cargar y filtrar visitas
 document.getElementById('filtro').addEventListener('submit', async e => {
   e.preventDefault();
+  const asesorSel = document.getElementById('asesor').value;
   const desde = new Date(document.getElementById('desde').value);
   const hasta = new Date(document.getElementById('hasta').value);
-  hasta.setHours(23,59,59,999);
+  hasta.setHours(23, 59, 59, 999);
 
   const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&headers=1`;
   const res = await fetch(url);
   const text = await res.text();
-  const json = JSON.parse(text.substr(47).slice(0,-2));
+  const json = JSON.parse(text.substr(47).slice(0, -2));
   const rows = json.table.rows;
 
   let html = '';
   rows.forEach(r => {
-    const ts = new Date(r.c[8]?.v || 0); // columna "timestamp"
-    if (ts >= desde && ts <= hasta) {
+    const ts = new Date(r.c[9]?.v || 0); // columna "timestamp"
+    const asesor = r.c[2]?.v || '';
+    if (ts >= desde && ts <= hasta && (asesorSel === '' || asesor === asesorSel)) {
       html += `
-        <p><strong>${r.c[1]?.v || ''}</strong> (${r.c[2]?.v || ''})</p>
+        <p><strong>${r.c[1]?.v || ''}</strong> (${asesor})</p>
         <p>${r.c[4]?.v || ''} · ${new Date(r.c[5]?.v || '').toLocaleString('es-ES')}</p>
-        <p><a href="${r.c[8]?.v || '#'}">Ver JPG</a></p>
+        <p><a href="${r.c[8]?.v || '#'}" target="_blank">📎 Ver JPG</a></p>
         <div class="divider"></div>
       `;
     }
