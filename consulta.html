@@ -20,6 +20,7 @@ button:active{opacity:.9}
 #lista{background:#fff;padding:1rem;border-radius:var(--radius);margin-top:1rem;box-shadow:0 2px 8px rgba(0,0,0,.08)}
 #lista p{margin:.25rem 0}
 .divider{height:1px;background:#ddd;margin:.5rem 0}
+#log{background:#f0f0f0;border-left:4px solid var(--naranja);padding:.5rem;margin-top:1rem;font-size:.85rem;color:#444;white-space:pre-wrap}
 </style>
 </head>
 <body>
@@ -58,6 +59,7 @@ button:active{opacity:.9}
   <button onclick="window.open('https://docs.google.com/spreadsheets/d/1XpSuE9wzhEQ0pM9AxtzE4WtFz8eQpMtlKYYDMvNOs3s/edit?usp=sharing','_blank')">📊 Ver Excel completo</button>
 </div>
 
+<div id="log"></div>
 <div id="lista"></div>
 
 <script>
@@ -78,39 +80,56 @@ document.getElementById('filtro').addEventListener('submit', async e => {
   const hasta = new Date(document.getElementById('hasta').value);
   hasta.setHours(23, 59, 59, 999);
 
-  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&headers=1`;
-  const res = await fetch(url);
-  const text = await res.text();
-  const json = JSON.parse(text.substr(47).slice(0, -2));
-  const rows = json.table.rows;
+  const log = document.getElementById('log');
+  log.textContent = '⏳ Cargando datos...\n';
 
-  let html = '';
-  rows.forEach(r => {
-    // columna F → "2026-01-22 12:00"
-    const fechaStr = (r.c[5]?.v || '').toString().trim();
-    if (!fechaStr) return;
-    const [dia, hora] = fechaStr.split(' ');
-    const [y, m, d]   = dia.split('-');
-    const [h, min]    = hora.split(':');
-    const fechaVisita = new Date(y, m - 1, d, h, min); // ← fecha válida
+  try {
+    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&headers=1`;
+    const res = await fetch(url);
+    const text = await res.text();
+    log.textContent += '✅ Respuesta obtenida\n';
 
-    const asesor = (r.c[2]?.v || '').trim();
-    const jpgUrl = r.c[8]?.v || '';
+    const json = JSON.parse(text.substr(47).slice(0, -2));
+    const rows = json.table.rows;
+    log.textContent += `📊 Total de filas: ${rows.length}\n`;
 
-    if (
-      fechaVisita >= desde &&
-      fechaVisita <= hasta &&
-      (asesorSel === '' || asesor === asesorSel)
-    ) {
-      html += `
-        <p><strong>${r.c[1]?.v || ''}</strong> (${asesor})</p>
-        <p>${r.c[4]?.v || ''} · ${fechaVisita.toLocaleString('es-ES')}</p>
-        <p><a href="${jpgUrl}" target="_blank">📎 Ver JPG</a></p>
-        <div class="divider"></div>
-      `;
-    }
-  });
-  document.getElementById('lista').innerHTML = html || '<p>Sin visitas en este rango.</p>';
+    let html = '';
+    let contador = 0;
+
+    rows.forEach(r => {
+      // columna F → "2026-01-22 12:00"
+      const fechaStr = (r.c[5]?.v || '').toString().trim();
+      if (!fechaStr) return;
+      const [dia, hora] = fechaStr.split(' ');
+      const [y, m, d]   = dia.split('-');
+      const [h, min]    = hora.split(':');
+      const fechaVisita = new Date(y, m - 1, d, h, min); // fecha válida
+
+      const asesor = (r.c[2]?.v || '').trim();
+      const jpgUrl = r.c[8]?.v || '';
+
+      if (
+        fechaVisita >= desde &&
+        fechaVisita <= hasta &&
+        (asesorSel === '' || asesor === asesorSel)
+      ) {
+        contador++;
+        html += `
+          <p><strong>${r.c[1]?.v || ''}</strong> (${asesor})</p>
+          <p>${r.c[4]?.v || ''} · ${fechaVisita.toLocaleString('es-ES')}</p>
+          <p><a href="${jpgUrl}" target="_blank">📎 Ver JPG</a></p>
+          <div class="divider"></div>
+        `;
+      }
+    });
+
+    log.textContent += `✅ Filtradas: ${contador} visitas\n`;
+    document.getElementById('lista').innerHTML = html || '<p>Sin visitas en este rango.</p>';
+
+  } catch (err) {
+    log.textContent += '❌ Error: ' + err.message + '\n';
+    document.getElementById('lista').innerHTML = '<p>Error al cargar datos.</p>';
+  }
 });
 </script>
 </body>
