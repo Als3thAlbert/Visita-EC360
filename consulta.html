@@ -21,6 +21,7 @@ button:active{opacity:.9}
 #lista p{margin:.25rem 0}
 .divider{height:1px;background:#ddd;margin:.5rem 0}
 #log{background:#f0f0f0;border-left:4px solid var(--naranja);padding:.5rem;margin-top:1rem;font-size:.85rem;color:#444;white-space:pre-wrap}
+.fila-debug{font-size:.75rem;color:#666;margin-bottom:.3rem}
 </style>
 </head>
 <body>
@@ -81,7 +82,9 @@ document.getElementById('filtro').addEventListener('submit', async e => {
   hasta.setHours(23, 59, 59, 999);
 
   const log = document.getElementById('log');
+  const lista = document.getElementById('lista');
   log.textContent = '⏳ Cargando datos...\n';
+  lista.innerHTML = '';
 
   try {
     const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&headers=1`;
@@ -96,19 +99,32 @@ document.getElementById('filtro').addEventListener('submit', async e => {
     let html = '';
     let contador = 0;
 
-    rows.forEach(r => {
+    rows.forEach((r, idx) => {
       // columna F → "2026-01-22 12:00"
       const fechaStr = (r.c[5]?.v || '').toString().trim();
-      if (!fechaStr || fechaStr.length < 10) return; // protección
+      const asesor   = (r.c[2]?.v || '').trim();
+      const jpgUrl   = r.c[8]?.v || '';
+
+      // depuración visible por fila
+      const logFila = `Fila ${idx + 1}: asesor="${aseser}" fechaStr="${fechaStr}"`;
+
+      if (!fechaStr || fechaStr.length < 10) {
+        log.innerHTML += `<div class="fila-debug">⚠️ Salto: fecha vacía (${logFila})</div>`;
+        return;
+      }
 
       const [dia, hora] = fechaStr.split(' ');
-      if (!dia || !hora) return;
-      const [y, m, d] = dia.split('-');
-      const [h, min] = hora.split(':');
-      const fechaVisita = new Date(y, m - 1, d, h, min); // fecha válida
+      if (!dia || !hora) {
+        log.innerHTML += `<div class="fila-debug">⚠️ Salto: formato fecha mal (${logFila})</div>`;
+        return;
+      }
 
-      const asesor = (r.c[2]?.v || '').trim();
-      const jpgUrl = r.c[8]?.v || '';
+      const [y, m, d] = dia.split('-');
+      const [h, min]  = hora.split(':');
+      const fechaVisita = new Date(y, m - 1, d, h, min);
+
+      // depuración de fecha convertida
+      log.innerHTML += `<div class="fila-debug">✅ Fecha convertida: ${fechaVisita.toLocaleString('es-ES')} (${logFila})</div>`;
 
       if (
         fechaVisita >= desde &&
