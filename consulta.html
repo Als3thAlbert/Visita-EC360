@@ -100,10 +100,12 @@ document.getElementById('filtro').addEventListener('submit', async e => {
     let contador = 0;
 
     rows.forEach((r, idx) => {
-      // columna F → objeto Date: {v: Date(2026,0,22,12,0,0)}
+      // columna F → objeto Date: {v: Date(yyyy,m,d,h,min,s)}
       const fechaObj = r.c[5]?.v;
       const asesor   = (r.c[2]?.v || '').trim();
       const jpgUrl   = r.c[8]?.v || '';
+      const lugar    = r.c[4]?.v || '';
+      const telefono = r.c[3]?.v || '';
 
       // depuración visible por fila
       const logFila = `Fila ${idx + 1}: asesor="${asesor}" fechaObj="${fechaObj}"`;
@@ -127,7 +129,8 @@ document.getElementById('filtro').addEventListener('submit', async e => {
         contador++;
         html += `
           <p><strong>${r.c[1]?.v || ''}</strong> (${asesor})</p>
-          <p>${r.c[4]?.v || ''} · ${fechaVisita.toLocaleString('es-ES')}</p>
+          <p>📍 ${lugar} · 📞 ${telefono}</p>
+          <p>📅 ${fechaVisita.toLocaleString('es-ES')}</p>
           <p><a href="${jpgUrl}" target="_blank">📎 Ver JPG</a></p>
           <div class="divider"></div>
         `;
