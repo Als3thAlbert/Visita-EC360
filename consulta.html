@@ -100,12 +100,17 @@ document.getElementById('filtro').addEventListener('submit', async e => {
     let contador = 0;
 
     rows.forEach((r, idx) => {
-      // columna F → objeto Date: {v: Date(yyyy,m,d,h,min,s)}
-      const fechaObj = r.c[5]?.v;
-      const asesor   = (r.c[2]?.v || '').trim();
-      const jpgUrl   = r.c[8]?.v || '';
-      const lugar    = r.c[4]?.v || '';
-      const telefono = r.c[3]?.v || '';
+      // columnas según tu nueva hoja (solo las que aparecen en el ticket):
+      // A: CALL_CENTER, B: OBSERVACIONES, C: SI_NO, D: FECHA_LLAMADA, E: LOCAL, F: CONTACTO, G: TELEFONO, H: DIRECCION, I: POBLACION, J: COMARCA, K: FECHA_DE_VISITA, L: HORA, M: COMERCIALIZADORA, N: ASESOR, O: COMENTARIOS, P: COMENTARIOS_ASESOR, Q: CRM, R: jpg_url, S: Timestamp
+      const callCenter = (r.c[0]?.v || '').trim();     // A
+      const observaciones = (r.c[1]?.v || '').trim(); // B
+      const contacto   = (r.c[5]?.v || '').trim();     // F
+      const telefono   = (r.c[6]?.v || '').trim();     // G
+      const direccion  = (r.c[7]?.v || '').trim();     // H
+      const poblacion  = (r.c[8]?.v || '').trim();     // I
+      const fechaObj   = r.c[10]?.v;                  // K (Fecha de Visita)
+      const jpgUrl     = r.c[17]?.v || '';            // R (jpg_url)
+      const asesor     = callCenter;                  // mismo que CALL CENTER
 
       // depuración visible por fila
       const logFila = `Fila ${idx + 1}: asesor="${asesor}" fechaObj="${fechaObj}"`;
@@ -128,9 +133,9 @@ document.getElementById('filtro').addEventListener('submit', async e => {
       ) {
         contador++;
         html += `
-          <p><strong>${r.c[1]?.v || ''}</strong> (${asesor})</p>
-          <p>📍 ${lugar} · 📞 ${telefono}</p>
-          <p>📅 ${fechaVisita.toLocaleString('es-ES')}</p>
+          <p><strong>${contacto}</strong> (${asesor})</p>
+          <p>📍 ${direccion} · 📞 ${telefono}</p>
+          <p>🏙️ ${poblacion} · 📅 ${fechaVisita.toLocaleString('es-ES')}</p>
           <p><a href="${jpgUrl}" target="_blank">📎 Ver JPG</a></p>
           <div class="divider"></div>
         `;
