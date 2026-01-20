@@ -45,6 +45,13 @@ button:active{opacity:.9}
     <option value="">-- Selecciona --</option>
     <option>Jennifer Diana</option>
     <option>Marina</option>
+    <option>Eli</option>
+    <option>Iñigo</option>
+    <option>Merche</option>
+    <option>Núria</option>
+    <option>Jenny AC</option>
+    <option>Tere</option>
+    <option>Ray</option>
   </select>
 
   <label>Observaciones</label>
@@ -84,7 +91,7 @@ button:active{opacity:.9}
   <input name="crm">
 </form>
 
-<!-- PREVIEW (solo campos del ticket) -->
+<!-- PREVIEW (solo las 9 columnas del ticket) -->
 <div id="ticket" class="hidden">
   <div class="logo">E-CONSULTING 360</div>
   <p><strong>Call Center:</strong> <span id="pv_call_center"></span></p>
@@ -121,7 +128,7 @@ forma.addEventListener('submit', async e => {
   e.preventDefault();
   const d = Object.fromEntries(new FormData(forma));
 
-  // Rellena preview (solo campos del ticket)
+  // Rellena preview (solo las 9 columnas del ticket)
   ['call_center','observaciones','contacto','telefono','direccion','poblacion','fecha_visita','hora'].forEach(k => {
     const el = document.getElementById('pv_' + k);
     if(el) el.textContent = d[k] || '';
@@ -139,13 +146,26 @@ forma.addEventListener('submit', async e => {
     reader.onloadend = async () => {
       const base64 = reader.result.split(',')[1];
 
-      // Guardamos en Sheets (con TODOS los campos, pero solo los 9 del ticket aparecen en el JPG)
+      // Guardamos en Sheets (con TODOS los campos, pero solo las 9 del ticket aparecen en el JPG)
       const payload = {
-        ...d,
+        call_center: d.call_center,
+        observaciones: d.observaciones,
+        contacto: d.contacto,
+        telefono: d.telefono,
+        direccion: d.direccion,
+        poblacion: d.poblacion,
+        fecha_visita: d.fecha_visita,
+        hora: d.hora,
+        local: d.local || '',
+        comarca: d.comarca || '',
+        comercializadora: d.comercializadora || '',
+        comentarios_asesor: d.comentarios_asesor || '',
+        crm: d.crm || '',
         fecha_llamada: new Date().toISOString().slice(0,10), // hoy
         jpg_url: '', // se llenará después
         timestamp: new Date().toISOString()
       };
+
       await fetch('https://script.google.com/macros/s/AKfycbyXSH1HentT_0gysgH9haoyEzNdg8Pd7_TIno8UiN2ahjG77ugLq9EF-cXThYtlmUDsYQ/exec', {
         method: 'POST',
         body: JSON.stringify(payload)
