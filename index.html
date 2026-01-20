@@ -5,21 +5,15 @@
 <title>Alta Visita – E-CONSULTING 360</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
-:root{
-  --naranja:#ff6600;
-  --negro:#111;
-  --gris:#555;
-  --bg:#fafafa;
-  --radius:8px;
-  --fuente:15px/1.4 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial;
-}
+:root{--naranja:#ff6600;--negro:#111;--gris:#555;--bg:#fafafa;--radius:8px;--fuente:15px/1.4 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial}
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);font:var(--fuente);color:var(--negro);padding:1rem;padding-bottom:80px}
-header{margin-bottom:1rem;text-align:center}
-.logo{font-size:1.6rem;font-weight:bold;color:var(--naranja);text-shadow:1px 1px 3px rgba(0,0,0,.25)}
+header{text-align:center;margin-bottom:1.5rem}
+.logo{font-size:1.8rem;font-weight:bold;color:var(--naranja);text-shadow:1px 1px 3px rgba(0,0,0,.25)}
+h2{margin:1rem 0 .5rem;color:var(--naranja)}
 form{display:grid;gap:.75rem}
-label{font-weight:600;margin-bottom:-.5rem;display:block;color:var(--gris)}
-input,textarea,select{width:100%;padding:.65rem;font-size:1rem;border:1px solid #ddd;border-radius:var(--radius);background:#fff}
+label{font-weight:600;color:var(--gris)}
+input,select,textarea,button{width:100%;padding:.65rem;font-size:1rem;border:1px solid #ddd;border-radius:var(--radius)}
 textarea{resize:vertical;min-height:70px}
 button{position:fixed;bottom:0;left:0;right:0;padding:1rem;font-size:1.1rem;font-weight:600;border:0;background:var(--naranja);color:#fff;cursor:pointer;box-shadow:0 -2px 8px rgba(0,0,0,.15);z-index:10}
 button:active{opacity:.9}
@@ -28,99 +22,161 @@ button:active{opacity:.9}
 #ticket p{margin:.25rem 0}
 .hidden{display:none}
 .divider{height:1px;background:#ddd;margin:.6rem 0}
+
+/* POP-UP */
+#popupOverlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);z-index:200;display:none;align-items:center;justify-content:center}
+#popupBox{background:#fff;padding:1.5rem;border-radius:var(--radius);width:90%;max-width:350px;text-align:center;box-shadow:0 4px 20px rgba(0,0,0,.25)}
+#popupBox h3{color:var(--naranja);margin-bottom:.5rem}
+#popupBox p{margin:.5rem 0}
+#popupBtnWhatsApp{margin-top:1rem;background:#25D366;color:#fff;border:0;padding:.75rem 1rem;border-radius:var(--radius);font-size:1rem;cursor:pointer}
+#popupBtnWhatsApp:active{opacity:.9}
 </style>
 </head>
 <body>
 
 <header>
   <div class="logo">E-CONSULTING 360</div>
+  <h2>Alta Visita</h2>
 </header>
 
 <form id="forma" autocomplete="off">
-  <label>Nombre de empresa*</label>
-  <input name="empresa" required>
-
-  <label>Nombre cliente*</label>
-  <input name="nombre" required>
-
-  <label>Asesor*</label>
-  <select name="asesor" required>
+  <label>Call Center *</label>
+  <select name="call_center" required>
     <option value="">-- Selecciona --</option>
     <option>Jennifer Diana</option>
     <option>Marina</option>
-    <option>Eli</option>
-    <option>Iñigo</option>
-    <option>Merche</option>
-    <option>Núria</option>
-    <option>Jenny AC</option>
-    <option>Tere</option>
-    <option>Ray</option>
   </select>
 
-  <label>Teléfono*</label>
+  <label>Observaciones</label>
+  <textarea name="observaciones"></textarea>
+
+  <label>Contacto (Gerente) *</label>
+  <input name="contacto" required>
+
+  <label>Teléfono *</label>
   <input name="telefono" type="tel" required>
 
-  <label>Dirección*</label>
+  <label>Dirección *</label>
   <input name="direccion" required>
 
-  <label>Fecha/hora de la visita*</label>
-  <input name="fecha_hora" type="datetime-local" required>
+  <label>Población *</label>
+  <input name="poblacion" required>
 
-  <label>Fecha de la llamada*</label>
-  <input name="fecha_llamada" type="date" required>
+  <label>Fecha de Visita *</label>
+  <input name="fecha_visita" type="date" required>
 
-  <label>Observaciones</label>
-  <textarea name="observ"></textarea>
+  <label>Hora *</label>
+  <input name="hora" type="time" required>
+
+  <label>Local / Establecimiento</label>
+  <input name="local">
+
+  <label>Comarca</label>
+  <input name="comarca">
+
+  <label>Comercializadora</label>
+  <input name="comercializadora">
+
+  <label>Comentarios Asesor</label>
+  <textarea name="comentarios_asesor"></textarea>
+
+  <label>CRM (opcional)</label>
+  <input name="crm">
 </form>
 
-<!-- PREVIEW -->
+<!-- PREVIEW (solo campos del ticket) -->
 <div id="ticket" class="hidden">
   <div class="logo">E-CONSULTING 360</div>
-  <p><strong>Empresa:</strong> <span id="pv_empresa"></span></p>
-  <div class="divider"></div>
-  <p><strong>Cliente:</strong> <span id="pv_nombre"></span></p>
-  <p><strong>Asesor:</strong> <span id="pv_asesor"></span></p>
+  <p><strong>Call Center:</strong> <span id="pv_call_center"></span></p>
+  <p><strong>Observaciones:</strong> <span id="pv_observaciones"></span></p>
+  <p><strong>Contacto:</strong> <span id="pv_contacto"></span></p>
   <p><strong>Teléfono:</strong> <span id="pv_telefono"></span></p>
   <p><strong>Dirección:</strong> <span id="pv_direccion"></span></p>
-  <div class="divider"></div>
-  <p><strong>Fecha/hora visita:</strong> <span id="pv_fecha_visita"></span></p>
-  <p><strong>Fecha llamada:</strong> <span id="pv_fecha_llamada"></span></p>
-  <div class="divider"></div>
-  <p><strong>Observ:</strong> <span id="pv_observ"></span></p>
+  <p><strong>Población:</strong> <span id="pv_poblacion"></span></p>
+  <p><strong>Fecha Visita:</strong> <span id="pv_fecha_visita"></span></p>
+  <p><strong>Hora:</strong> <span id="pv_hora"></span></p>
+  <p><strong>Timestamp:</strong> <span id="pv_timestamp"></span></p>
 </div>
 
 <button type="submit" form="forma">Generar JPG y subir a Drive</button>
 
+<!-- POP-UP -->
+<div id="popupOverlay" class="hidden">
+  <div id="popupBox">
+    <h3>✅ Se generó correctamente</h3>
+    <p>La imagen se está subiendo a la carpeta…</p>
+    <button id="popupBtnWhatsApp">📤 Exportar imagen a WhatsApp</button>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script>
-document.querySelector('[name="fecha_llamada"]').valueAsDate=new Date();
+// Fecha de llamada = hoy (se envía al backend)
+document.addEventListener('DOMContentLoaded', () => {
+  const hoy = new Date();
+  // No mostramos fecha de llamada al usuario, solo la usamos internamente
+});
 
-forma.addEventListener('submit',async (e)=>{
+forma.addEventListener('submit', async e => {
   e.preventDefault();
-  const d=Object.fromEntries(new FormData(forma));
-  const fechaVisita=new Date(d.fecha_hora).toLocaleString('es-ES');
-  const fechaLlamada=new Date(d.fecha_llamada).toLocaleDateString('es-ES');
-  document.getElementById('pv_fecha_visita').textContent=fechaVisita;
-  document.getElementById('pv_fecha_llamada').textContent=fechaLlamada;
-  ['empresa','nombre','asesor','telefono','direccion','observ']
-    .forEach(k=>{document.getElementById('pv_'+k).textContent=d[k]});
+  const d = Object.fromEntries(new FormData(forma));
+
+  // Rellena preview (solo campos del ticket)
+  ['call_center','observaciones','contacto','telefono','direccion','poblacion','fecha_visita','hora'].forEach(k => {
+    const el = document.getElementById('pv_' + k);
+    if(el) el.textContent = d[k] || '';
+  });
+  // Timestamp automático
+  document.getElementById('pv_timestamp').textContent = new Date().toLocaleString('es-ES');
+
   ticket.classList.remove('hidden');
 
-  const canvas=await html2canvas(ticket,{scale:3,backgroundColor:'#fff'});
-  canvas.toBlob(async blob=>{
-    const reader=new FileReader();
+  // Genera JPG
+  const canvas = await html2canvas(ticket, {scale:3,backgroundColor:'#fff'});
+  canvas.toBlob(async blob => {
+    const reader = new FileReader();
     reader.readAsDataURL(blob);
-    reader.onloadend=async ()=>{
-      const base64=reader.result.split(',')[1];
-      // TU URL REAL DE WEBAPP
-      const webApp='https://script.google.com/macros/s/AKfycbyXSH1HentT_0gysgH9haoyEzNdg8Pd7_TIno8UiN2ahjG77ugLq9EF-cXThYtlmUDsYQ/exec';
-      const res=await fetch(webApp,{method:'POST',body:JSON.stringify({...d, jpg:base64})});
-      const {url}=await res.json();
-      if(navigator.share){await navigator.share({title:'Comprobante',url});}
-      else{window.open(url,'_blank');}
+    reader.onloadend = async () => {
+      const base64 = reader.result.split(',')[1];
+
+      // Guardamos en Sheets (con TODOS los campos, pero solo los 9 del ticket aparecen en el JPG)
+      const payload = {
+        ...d,
+        fecha_llamada: new Date().toISOString().slice(0,10), // hoy
+        jpg_url: '', // se llenará después
+        timestamp: new Date().toISOString()
+      };
+      await fetch('https://script.google.com/macros/s/AKfycbyXSH1HentT_0gysgH9haoyEzNdg8Pd7_TIno8UiN2ahjG77ugLq9EF-cXThYtlmUDsYQ/exec', {
+        method: 'POST',
+        body: JSON.stringify(payload)
+      });
+
+      // MOSTRAR POP-UP
+      mostrarPopUp(blob);
     };
   });
 });
+
+// Función para mostrar pop-up y manejar WhatsApp
+function mostrarPopUp(blob) {
+  const overlay = document.getElementById('popupOverlay');
+  const btnWhatsApp = document.getElementById('popupBtnWhatsApp');
+  overlay.classList.remove('hidden');
+
+  // Al pulsar el botón del pop-up
+  btnWhatsApp.onclick = async () => {
+    const file = new File([blob], 'visita.jpg', {type:'image/jpeg'});
+    if (navigator.share) {
+      await navigator.share({title:'Comprobante',files:[file]});
+    } else {
+      // Fallback: abre WhatsApp Web con texto predefinido
+      const text = encodeURIComponent('Aquí tienes el comprobante de tu visita:');
+      const url = URL.createObjectURL(blob);
+      window.open(`https://wa.me/?text=${text}&media=${url}`, '_blank');
+    }
+    overlay.classList.add('hidden');
+  };
+}
 </script>
 </body>
 </html>
