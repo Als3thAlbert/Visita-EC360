@@ -13,7 +13,7 @@ header{text-align:center;margin-bottom:1.5rem}
 h2{margin:1rem 0 .5rem;color:var(--naranja)}
 form{display:grid;gap:.75rem}
 label{font-weight:600;color:var(--gris)}
-input,select,textarea,button{width:100%;padding:.65rem;font-size:1rem;border:1px solid #ddd;border-radius:var(--radius)}
+input,select,textarea,button{width:100%;padding:.65rem;font-size:1rem;border:1px solid #ddd;border-radius:var(--radius')}
 textarea{resize:vertical;min-height:70px}
 button{position:fixed;bottom:0;left:0;right:0;padding:1rem;font-size:1.1rem;font-weight:600;border:0;background:var(--naranja);color:#fff;cursor:pointer;box-shadow:0 -2px 8px rgba(0,0,0,.15);z-index:10}
 button:active{opacity:.9}
@@ -51,7 +51,6 @@ button:active{opacity:.9}
 
   <label>SI / NO *</label>
   <select name="si_no" required>
-    <option value="">-- Selecciona --</option>
     <option selected>NO</option>
     <option>SÍ</option>
   </select>
@@ -106,7 +105,7 @@ button:active{opacity:.9}
 
 <button type="submit" form="forma">Generar JPG y subir a Drive</button>
 
-<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js "></script>
 <script>
 // Fecha de llamada = hoy (se envía al backend)
 document.addEventListener('DOMContentLoaded', () => {
@@ -159,8 +158,8 @@ forma.addEventListener('submit', async e => {
         timestamp: new Date().toISOString()
       };
 
-      // ✅ AQUÍ ESTÁ EL ARREGLO: encabezado JSON obligatorio + URL actualizada
-      await fetch('https://script.google.com/macros/s/AKfycbyXSH1HentT_0gysgH9haoyEzNdg8Pd7_TIno8UiN2ahjG77ugLq9EF-cXThYtlmUDsYQ/exec', {
+      // ✅ AQUÍ ESTÁ EL ARREGLO: encabezado JSON obligatorio + URL REAL (copiarás después)
+      await fetch('https://script.google.com/macros/s/AKfycby5IKBNazkU-94HQ0wlXtfEkDe0sAWMtfDtewbL8PP6_wzCvmDQNUPlvyJwGmYwR4jk6g/exec', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(payload)
