@@ -13,7 +13,7 @@ header{text-align:center;margin-bottom:1.5rem}
 h2{margin:1rem 0 .5rem;color:var(--naranja)}
 form{display:grid;gap:.75rem}
 label{font-weight:600;color:var(--gris)}
-input,select,textarea,button{width:100%;padding:.65rem;font-size:1rem;border:1px solid #ddd;border-radius:var(--radius')}
+input,select,textarea,button{width:100%;padding:.65rem;font-size:1rem;border:1px solid #ddd;border-radius:var(--radius)}
 textarea{resize:vertical;min-height:70px}
 button{position:fixed;bottom:0;left:0;right:0;padding:1rem;font-size:1.1rem;font-weight:600;border:0;background:var(--naranja);color:#fff;cursor:pointer;box-shadow:0 -2px 8px rgba(0,0,0,.15);z-index:10}
 button:active{opacity:.9}
@@ -22,6 +22,14 @@ button:active{opacity:.9}
 #ticket p{margin:.25rem 0}
 .hidden{display:none}
 .divider{height:1px;background:#ddd;margin:.6rem 0}
+
+/* POP-UP */
+#popupOverlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);z-index:200;display:none;align-items:center;justify-content:center}
+#popupBox{background:#fff;padding:1.5rem;border-radius:var(--radius);width:90%;max-width:350px;text-align:center;box-shadow:0 4px 20px rgba(0,0,0,.25)}
+#popupBox h3{color:var(--naranja);margin-bottom:.5rem}
+#popupBox p{margin:.5rem 0}
+#popupBtnWhatsApp{margin-top:1rem;background:#25D366;color:#fff;border:0;padding:.75rem 1rem;border-radius:var(--radius);font-size:1rem;cursor:pointer}
+#popupBtnWhatsApp:active{opacity:.9}
 </style>
 </head>
 <body>
@@ -32,28 +40,22 @@ button:active{opacity:.9}
 </header>
 
 <form id="forma" autocomplete="off">
-  <label>Call Center *</label>
+
+  <label>Call Center / Asesor *</label>
   <select name="call_center" required>
     <option value="">-- Selecciona --</option>
     <option>Jennifer Diana</option>
     <option>Marina</option>
-    <option>Eli</option>
-    <option>Iñigo</option>
-    <option>Merche</option>
-    <option>Núria</option>
-    <option>Jenny AC</option>
-    <option>Tere</option>
-    <option>Ray</option>
+  </select>
+
+  <label>SI / NO *</label>
+  <select name="si_no" required>
+    <option value="NO" selected>NO</option>
+    <option>SI</option>
   </select>
 
   <label>Observaciones</label>
   <textarea name="observaciones"></textarea>
-
-  <label>SI / NO *</label>
-  <select name="si_no" required>
-    <option selected>NO</option>
-    <option>SÍ</option>
-  </select>
 
   <label>Contacto (Gerente) *</label>
   <input name="contacto" required>
@@ -87,9 +89,10 @@ button:active{opacity:.9}
 
   <label>CRM (opcional)</label>
   <input name="crm">
+
 </form>
 
-<!-- PREVIEW (solo las 9 columnas del ticket) -->
+<!-- PREVIEW (solo campos del ticket) -->
 <div id="ticket" class="hidden">
   <div class="logo">E-CONSULTING 360</div>
   <p><strong>Call Center:</strong> <span id="pv_call_center"></span></p>
@@ -105,79 +108,84 @@ button:active{opacity:.9}
 
 <button type="submit" form="forma">Generar JPG y subir a Drive</button>
 
-<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js "></script>
+<!-- POP-UP -->
+<div id="popupOverlay" class="hidden">
+  <div id="popupBox">
+    <h3>✅ Se generó correctamente</h3>
+    <p>La imagen se está subiendo a la carpeta…</p>
+    <button id="popupBtnWhatsApp">📤 Exportar imagen a WhatsApp</button>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script>
-// Fecha de llamada = hoy (se envía al backend)
-document.addEventListener('DOMContentLoaded', () => {
-  const hoy = new Date();
-  // No mostramos fecha de llamada al usuario, solo la usamos internamente
-});
+document.addEventListener('DOMContentLoaded', () => {});
 
 forma.addEventListener('submit', async e => {
   e.preventDefault();
   const d = Object.fromEntries(new FormData(forma));
 
-  // Rellena preview (solo las 9 columnas del ticket)
+  // Asesor = mismo valor que call_center
+  d.asesor = d.call_center;
+
+  // Rellena preview (solo campos del ticket)
   ['call_center','observaciones','contacto','telefono','direccion','poblacion','fecha_visita','hora'].forEach(k => {
     const el = document.getElementById('pv_' + k);
     if(el) el.textContent = d[k] || '';
   });
+
   // Timestamp automático
   document.getElementById('pv_timestamp').textContent = new Date().toLocaleString('es-ES');
 
   ticket.classList.remove('hidden');
 
-  // Genera JPG y sube directamente (sin pop-up)
-  const canvas = await html2canvas(ticket, {scale:3,backgroundColor:'#fff'});
+  // Genera JPG
+  const canvas = await html2canvas(ticket, {scale:3, backgroundColor:'#fff'});
   canvas.toBlob(async blob => {
     const reader = new FileReader();
     reader.readAsDataURL(blob);
     reader.onloadend = async () => {
       const base64 = reader.result.split(',')[1];
 
-      // Guardamos en Sheets (con TODOS los campos, pero solo las 9 del ticket aparecen en el JPG)
       const payload = {
-        call_center: d.call_center,
-        observaciones: d.observaciones || '',
-        si_no: d.si_no,
-        fecha_llamada: new Date().toISOString().slice(0,10), // hoy
-        local: d.local || '',
-        contacto: d.contacto,
-        telefono: d.telefono,
-        direccion: d.direccion,
-        poblacion: d.poblacion,
-        comarca: d.comarca || '',
-        fecha_visita: d.fecha_visita,
-        hora: d.hora,
-        comercializadora: d.comercializadora || '',
-        asesor: d.call_center, // mismo que CALL CENTER
-        comentarios: d.comentarios || '',
-        comentarios_asesor: d.comentarios_asesor || '',
-        crm: d.crm || '',
-        jpg_url: '', // se llenará después
-        timestamp: new Date().toISOString()
+        ...d,
+        fecha_llamada: new Date().toISOString().slice(0,10),
+        timestamp: new Date().toISOString(),
+        jpg: base64
       };
 
-      // ✅ AQUÍ ESTÁ EL ARREGLO: encabezado JSON obligatorio + URL REAL (copiarás después)
-      await fetch('https://script.google.com/macros/s/AKfycby5IKBNazkU-94HQ0wlXtfEkDe0sAWMtfDtewbL8PP6_wzCvmDQNUPlvyJwGmYwR4jk6g/exec', {
+      // Envío a Google Apps Script
+      const res = await fetch('https://script.google.com/macros/s/AKfycbyXSH1HentT_0gysgH9haoyEzNdg8Pd7_TIno8UiN2ahjG77ugLq9EF-cXThYtlmUDsYQ/exec', {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(payload)
       });
 
-      // Comparte directamente (sin pop-up)
-      const file = new File([blob], 'visita.jpg', {type:'image/jpeg'});
-      if (navigator.share) {
-        await navigator.share({title:'Comprobante',files:[file]});
-      } else {
-        // Fallback: abre WhatsApp Web con texto predefinido
-        const text = encodeURIComponent('Aquí tienes el comprobante de tu visita:');
-        const url = URL.createObjectURL(blob);
-        window.open(`https://wa.me/?text=${text}&media=${url}`, '_blank');
-      }
+      const json = await res.json();
+      console.log('JPG URL:', json.jpg_url);
+
+      mostrarPopUp(blob);
     };
   });
 });
+
+// Función para mostrar pop-up y manejar WhatsApp
+function mostrarPopUp(blob) {
+  const overlay = document.getElementById('popupOverlay');
+  const btnWhatsApp = document.getElementById('popupBtnWhatsApp');
+  overlay.classList.remove('hidden');
+
+  btnWhatsApp.onclick = async () => {
+    const file = new File([blob], 'visita.jpg', {type:'image/jpeg'});
+    if (navigator.share) {
+      await navigator.share({title:'Comprobante',files:[file]});
+    } else {
+      const text = encodeURIComponent('Aquí tienes el comprobante de tu visita:');
+      const url = URL.createObjectURL(blob);
+      window.open(`https://wa.me/?text=${text}&media=${url}`, '_blank');
+    }
+    overlay.classList.add('hidden');
+  };
+}
 </script>
 </body>
 </html>
