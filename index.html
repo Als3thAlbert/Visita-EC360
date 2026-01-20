@@ -22,14 +22,6 @@ button:active{opacity:.9}
 #ticket p{margin:.25rem 0}
 .hidden{display:none}
 .divider{height:1px;background:#ddd;margin:.6rem 0}
-
-/* POP-UP */
-#popupOverlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);z-index:200;display:none;align-items:center;justify-content:center}
-#popupBox{background:#fff;padding:1.5rem;border-radius:var(--radius);width:90%;max-width:350px;text-align:center;box-shadow:0 4px 20px rgba(0,0,0,.25)}
-#popupBox h3{color:var(--naranja);margin-bottom:.5rem}
-#popupBox p{margin:.5rem 0}
-#popupBtnWhatsApp{margin-top:1rem;background:#25D366;color:#fff;border:0;padding:.75rem 1rem;border-radius:var(--radius);font-size:1rem;cursor:pointer}
-#popupBtnWhatsApp:active{opacity:.9}
 </style>
 </head>
 <body>
@@ -56,6 +48,13 @@ button:active{opacity:.9}
 
   <label>Observaciones</label>
   <textarea name="observaciones"></textarea>
+
+  <label>SI / NO *</label>
+  <select name="si_no" required>
+    <option value="">-- Selecciona --</option>
+    <option>SÍ</option>
+    <option>NO</option>
+  </select>
 
   <label>Contacto (Gerente) *</label>
   <input name="contacto" required>
@@ -107,15 +106,6 @@ button:active{opacity:.9}
 
 <button type="submit" form="forma">Generar JPG y subir a Drive</button>
 
-<!-- POP-UP -->
-<div id="popupOverlay" class="hidden">
-  <div id="popupBox">
-    <h3>✅ Se generó correctamente</h3>
-    <p>La imagen se está subiendo a la carpeta…</p>
-    <button id="popupBtnWhatsApp">📤 Exportar imagen a WhatsApp</button>
-  </div>
-</div>
-
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script>
 // Fecha de llamada = hoy (se envía al backend)
@@ -138,7 +128,7 @@ forma.addEventListener('submit', async e => {
 
   ticket.classList.remove('hidden');
 
-  // Genera JPG
+  // Genera JPG y sube directamente (sin pop-up)
   const canvas = await html2canvas(ticket, {scale:3,backgroundColor:'#fff'});
   canvas.toBlob(async blob => {
     const reader = new FileReader();
@@ -146,22 +136,25 @@ forma.addEventListener('submit', async e => {
     reader.onloadend = async () => {
       const base64 = reader.result.split(',')[1];
 
-      // Guardamos en Sheets (con TODOS los campos, pero solo las 9 del ticket aparecen en el JPG)
+    // Guardamos en Sheets (con TODOS los campos, pero solo las 9 del ticket aparecen en el JPG)
       const payload = {
         call_center: d.call_center,
-        observaciones: d.observaciones,
+        observaciones: d.observaciones || '',
+        si_no: d.si_no,
+        fecha_llamada: new Date().toISOString().slice(0,10), // hoy
+        local: d.local || '',
         contacto: d.contacto,
         telefono: d.telefono,
         direccion: d.direccion,
         poblacion: d.poblacion,
+        comarca: d.comarca || '',
         fecha_visita: d.fecha_visita,
         hora: d.hora,
-        local: d.local || '',
-        comarca: d.comarca || '',
         comercializadora: d.comercializadora || '',
+        asesor: d.call_center, // mismo que CALL CENTER
+        comentarios: d.comentarios || '',
         comentarios_asesor: d.comentarios_asesor || '',
         crm: d.crm || '',
-        fecha_llamada: new Date().toISOString().slice(0,10), // hoy
         jpg_url: '', // se llenará después
         timestamp: new Date().toISOString()
       };
@@ -171,32 +164,19 @@ forma.addEventListener('submit', async e => {
         body: JSON.stringify(payload)
       });
 
-      // MOSTRAR POP-UP
-      mostrarPopUp(blob);
+      // Comparte directamente (sin pop-up)
+      const file = new File([blob], 'visita.jpg', {type:'image/jpeg'});
+      if (navigator.share) {
+        await navigator.share({title:'Comprobante',files:[file]});
+      } else {
+        // Fallback: abre WhatsApp Web con texto predefinido
+        const text = encodeURIComponent('Aquí tienes el comprobante de tu visita:');
+        const url = URL.createObjectURL(blob);
+        window.open(`https://wa.me/?text=${text}&media=${url}`, '_blank');
+      }
     };
   });
 });
-
-// Función para mostrar pop-up y manejar WhatsApp
-function mostrarPopUp(blob) {
-  const overlay = document.getElementById('popupOverlay');
-  const btnWhatsApp = document.getElementById('popupBtnWhatsApp');
-  overlay.classList.remove('hidden');
-
-  // Al pulsar el botón del pop-up
-  btnWhatsApp.onclick = async () => {
-    const file = new File([blob], 'visita.jpg', {type:'image/jpeg'});
-    if (navigator.share) {
-      await navigator.share({title:'Comprobante',files:[file]});
-    } else {
-      // Fallback: abre WhatsApp Web con texto predefinido
-      const text = encodeURIComponent('Aquí tienes el comprobante de tu visita:');
-      const url = URL.createObjectURL(blob);
-      window.open(`https://wa.me/?text=${text}&media=${url}`, '_blank');
-    }
-    overlay.classList.add('hidden');
-  };
-}
 </script>
 </body>
 </html>
