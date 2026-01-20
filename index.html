@@ -159,7 +159,7 @@ forma.addEventListener('submit', async e => {
         timestamp: new Date().toISOString()
       };
 
-      // ✅ AQUÍ ESTÁ EL ARREGLO: encabezado JSON obligatorio
+      // ✅ AQUÍ ESTÁ EL ARREGLO: encabezado JSON obligatorio + URL actualizada
       await fetch('https://script.google.com/macros/s/AKfycbyXSH1HentT_0gysgH9haoyEzNdg8Pd7_TIno8UiN2ahjG77ugLq9EF-cXThYtlmUDsYQ/exec', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
