@@ -136,7 +136,7 @@ forma.addEventListener('submit', async e => {
     reader.onloadend = async () => {
       const base64 = reader.result.split(',')[1];
 
-    // Guardamos en Sheets (con TODOS los campos, pero solo las 9 del ticket aparecen en el JPG)
+      // Guardamos en Sheets (con TODOS los campos, pero solo las 9 del ticket aparecen en el JPG)
       const payload = {
         call_center: d.call_center,
         observaciones: d.observaciones || '',
@@ -159,8 +159,10 @@ forma.addEventListener('submit', async e => {
         timestamp: new Date().toISOString()
       };
 
+      // ✅ AQUÍ ESTÁ EL ARREGLO: encabezado JSON obligatorio
       await fetch('https://script.google.com/macros/s/AKfycbyXSH1HentT_0gysgH9haoyEzNdg8Pd7_TIno8UiN2ahjG77ugLq9EF-cXThYtlmUDsYQ/exec', {
         method: 'POST',
+        headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(payload)
       });
 
