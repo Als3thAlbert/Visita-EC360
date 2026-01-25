@@ -136,7 +136,7 @@ forma.addEventListener('submit', async e => {
   d.asesor = d.call_center;
 
   // Rellena preview (solo campos del ticket)
-  ['call_center','observaciones','contacto','telefono','direccion','poblacion','fecha_visita','hora'].forEach(k => {
+  ['call_center','observaciones','contacto','local','telefono','direccion','poblacion','fecha_visita','hora'].forEach(k => {
     const el = document.getElementById('pv_' + k);
     if(el) el.textContent = d[k] || '';
   });
